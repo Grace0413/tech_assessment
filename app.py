@@ -3,7 +3,9 @@ import requests
 import pandas as pd
 import time
 
-API_URL = "http://127.0.0.1:8000"  # FastAPI server address
+# API_URL = "http://127.0.0.1:8000"  # FastAPI server address
+API_URL = "https://tech-assessment-1emd.onrender.com" 
+
 
 st.title("📊 High-Value Link Scraper")
 st.write("Enter a webpage URL to scrape high-value links!")
