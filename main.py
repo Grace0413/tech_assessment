@@ -12,11 +12,11 @@ import time
 from dotenv import load_dotenv
 
 # Load .env file
-# load_dotenv()
-# api_key = os.getenv("OPENAI_API_KEY")
+load_dotenv()
+api_key = os.getenv("OPENAI_API_KEY")
 
-import streamlit as st
-api_key = st.secrets["OPENAI_API_KEY"]
+# import streamlit as st
+# api_key = st.secrets["OPENAI_API_KEY"]
 
 if not api_key:
     raise ValueError("❌ OpenAI API Key not found, please check the .env file!")
