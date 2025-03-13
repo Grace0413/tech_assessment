@@ -34,6 +34,12 @@ To run the project locally, follow these steps:
         OPENAI_API_KEY=your_openai_api_key_here
         
         ```
+5. **Open app.py and update the API_URL variable**:
+    ```
+    # Change this line in app.py
+    API_URL = "http://127.0.0.1:8000"  # Use local FastAPI server
+    
+    ```
         
 5. **Run the FastAPI backend**:
     
