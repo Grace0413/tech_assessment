@@ -94,29 +94,33 @@ def scrape_webpage(url):
         print(f"⚠️ Webpage scraping failed for {url}: {e}")
         return None  # Return None if scraping fails
 
-def analyze_with_gpt(url, keyword):
-    """Analyzes a URL's relevance to a keyword using GPT, with optional webpage content."""
+def analyze_with_gpt(url, keywords):
+    """Analyzes a URL's relevance to multiple keywords using GPT."""
     webpage_text = scrape_webpage(url)
 
-    prompt = f"""Analyze the relevance of the following webpage to the keyword: "{keyword}". 
+    prompt = f"""Analyze the relevance of the following webpage to the given keywords: "{keywords}". 
 
-If webpage content is available, use it to determine the main topic and its connection to the keyword. Otherwise, base the relevance on the URL structure.
+If webpage content is available, use it to determine the main topic and its connection to each keyword. Otherwise, base the relevance on the URL structure.
 
-Scoring guidelines:
+For each keyword, return a relevance score between 0 and 1 based on the following guidelines:
 - 0.0: Completely unrelated
 - 0.2: Slightly related (keyword appears but seems incidental)
 - 0.5: Somewhat relevant (keyword appears, but topic is broader)
 - 0.8: Highly relevant (webpage strongly focuses on keyword)
 - 1.0: Directly relevant (keyword is the main subject)
 
-Return **only a single floating-point number** between 0 and 1. No explanations.
+Return **only a JSON object** with keyword-score pairs. Example format:
+{{
+    "keyword1": 0.8,
+    "keyword2": 0.3,
+    "keyword3": 0.5
+}}
 
 URL: {url}
 """
 
     if webpage_text:
-        print(f"📄 Webpage Content: {webpage_text[:100]}...")
-        prompt += f"\nWebpage Content:\n{webpage_text}"
+        prompt += f"\nWebpage Content:\n{webpage_text[:3000]}"
 
     try:
         response = client.chat.completions.create(
@@ -124,25 +128,23 @@ URL: {url}
             messages=[{"role": "user", "content": prompt}]
         )
         answer = response.choices[0].message.content.strip()
-        print(f"📝 GPT Output: {answer}\n")
+        print(f"📝 GPT Output: {answer}")
 
-        # Ensure GPT returns a valid score
-        try:
-            score = float(answer)
-            if 0.0 <= score <= 1.0:
-                return score
-            else:
-                print(f"⚠️ Invalid GPT output (out of range): {answer}")
-        except ValueError:
-            print(f"⚠️ Invalid GPT output (not a number): {answer}")
+        # 解析 GPT 返回的 JSON 格式结果
+        import json
+        scores = json.loads(answer)
 
-        return 0.3  # Default fallback score
+        # 计算网页与多个关键词的综合相关度
+        avg_score = sum(scores.values()) / len(scores)  # 计算平均分
+        max_score = max(scores.values())  # 计算最高分
+
+        return avg_score, max_score, scores  # 返回多种指标，方便使用
 
     except Exception as e:
         print(f"❌ GPT processing failed: {e}")
-        return 0.3  # Return fallback score if GPT call fails
-    
-    
+        return 0.3, 0.3, {}  # 默认分数
+
+   
 def scrape_links(url, use_gpt, keywords):
     print("Keywords:", keywords)
     """ Scrape all links from a webpage and filter high-value links """
@@ -171,7 +173,7 @@ def scrape_links(url, use_gpt, keywords):
 
         extracted_links.append((full_url, link_type, relevance_score, ",".join(keywords_found)))
 
-        print(f"✅ Processed {i+1}/{total_links} links", ",".join(keywords_found), "score: ", relevance_score)
+        # print(f"✅ Processed {i+1}/{total_links} links", ",".join(keywords_found), "score: ", relevance_score)
     
     return extracted_links
 
@@ -213,11 +215,11 @@ def get_links(
                 "keywords": stored_keywords.split(",")
             })
         else:
-            gpt_score = analyze_with_gpt(url, keyword)
+            gpt_score = analyze_with_gpt(url, stored_keywords)
             filtered_results.append({
                 "url": url,
                 "type": link_type,
-                "relevance_score": gpt_score,
+                "relevance_score": gpt_score[0],
                 "keywords": stored_keywords.split(",")
             })
 

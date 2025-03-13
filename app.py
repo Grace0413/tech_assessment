@@ -3,8 +3,9 @@ import requests
 import pandas as pd
 import time
 
-# API_URL = "http://127.0.0.1:8000"  # FastAPI server address
-API_URL = "https://tech-assessment-1emd.onrender.com" 
+# TODO
+API_URL = "http://127.0.0.1:8000"  # FastAPI server address
+# API_URL = "https://tech-assessment-1emd.onrender.com" 
 
 
 st.title("📊 High-Value Link Scraper")
@@ -53,7 +54,6 @@ if st.button("🚀 Start Scraping"):
     if url:
         payload = {
             "url": url,
-            "use_gpt": False,
             "keywords": st.session_state.selected_keywords  # Ensure keywords are up to date
         }
         response = requests.post(f"{API_URL}/scrape", json=payload)
