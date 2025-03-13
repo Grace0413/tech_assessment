@@ -1,0 +1,16 @@
+# 忽略 API 密钥
+.env
+
+# 忽略 Python 生成的缓存
+__pycache__/
+*.pyc
+*.pyo
+
+# 忽略数据库文件
+links.db
+
+# 忽略日志文件
+*.log
+
+# 忽略 Streamlit 配置文件
+.streamlit/secrets.toml
